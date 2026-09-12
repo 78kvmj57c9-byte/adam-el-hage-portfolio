@@ -44,11 +44,11 @@ if(intro){
  const seen=localStorage.getItem('nts-intro-seen')==='1';
  if(seen) intro.classList.add('hide');
  else{
-  const lines=['ANALYSING YOUR LAST 20 LOSSES…','PROBLEM FOUND.','YOU.','WELCOME TO NOT THE SCRIPT.'];
+  const lines=['NOT THE SCRIPT.','SKILL ISSUE.','THERE ARE LEVELS TO THIS SHIT.','ENTER THE WORLD.'];
   const line=$('#introLine'),bar=$('#introBar');let i=0;
-  const next=()=>{if(i>=lines.length){setTimeout(()=>{intro.classList.add('hide');localStorage.setItem('nts-intro-seen','1')},900);return}
-    line.textContent=lines[i];bar.style.width=((i+1)/lines.length*100)+'%';i++;setTimeout(next,i===3?1000:1250)};
-  setTimeout(next,450);
+  const next=()=>{if(i>=lines.length){setTimeout(()=>{intro.classList.add('hide');localStorage.setItem('nts-intro-seen','1')},850);return}
+    line.textContent=lines[i];bar.style.width=((i+1)/lines.length*100)+'%';i++;setTimeout(next,i===3?1000:1050)};
+  setTimeout(next,350);
  }
  $('#skipIntro')?.addEventListener('click',()=>{intro.classList.add('hide');localStorage.setItem('nts-intro-seen','1')});
 }
