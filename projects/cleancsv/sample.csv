@@ -1,0 +1,5 @@
+name,email,amount
+ Alice ,alice@example.com,120
+Bob,bob@example.com,95
+Bob,bob@example.com,95
+Cara,,210
