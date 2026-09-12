@@ -26,7 +26,7 @@ I build software, web systems, automation, reporting tools and experimental AI/c
 
 ## Money Talk Lab
 
-The lab turns a larger project portfolio into shared, inspectable foundations rather than pretending every named idea is already a standalone company. Current prototypes include Project Commander, Revenue Lab, Prototype Lab, Business Builder Lite, Job Hunter Lite, Move OS, Subscription Killer, Scam Detector, Business Brain, The Council, Agent Factory, Workflow Compiler, Model Router, Model Olympics, Creator Engine, Life OS and a paper-only Trading Lab.
+The lab turns a larger project portfolio into shared, inspectable foundations rather than pretending every named idea is already a standalone company. Current prototypes include Project Commander, Revenue Lab, Prototype Lab, Business Builder Lite, Job Hunter Lite, Move OS, Subscription Killer, Scam Detector, Business Brain, The Council, Agent Factory, Workflow Compiler, Eval Lab, Iteration Engine, Invention Engine, Evidence Vault, Model Router, Model Olympics, Creator Engine, Life OS, a paper-only Trading Lab, and a NOT THE SCRIPT membership vertical slice.
 
 ## Services
 
