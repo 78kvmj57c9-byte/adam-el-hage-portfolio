@@ -1,57 +1,30 @@
 (()=>{
-const $=(s,p=document)=>p.querySelector(s), $$=(s,p=document)=>[...p.querySelectorAll(s)];
-const body=document.body, reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
-if(reduce) body.classList.add('low-power');
-
-const canvas=$('#stars');
-if(canvas){
- const ctx=canvas.getContext('2d'); let stars=[];
- function resize(){canvas.width=innerWidth*devicePixelRatio;canvas.height=innerHeight*devicePixelRatio;ctx.setTransform(devicePixelRatio,0,0,devicePixelRatio,0,0);stars=Array.from({length:Math.min(180,Math.floor(innerWidth/6))},()=>({x:Math.random()*innerWidth,y:Math.random()*innerHeight,r:Math.random()*1.3+.2,a:Math.random()*.55+.12,v:Math.random()*.08+.01}))}
- function draw(){ctx.clearRect(0,0,innerWidth,innerHeight);for(const s of stars){ctx.beginPath();ctx.fillStyle=`rgba(210,230,255,${s.a})`;ctx.arc(s.x,s.y,s.r,0,Math.PI*2);ctx.fill();if(!reduce){s.y+=s.v;if(s.y>innerHeight)s.y=0}}requestAnimationFrame(draw)}
- addEventListener('resize',resize);resize();draw();
-}
-const glow=$('.glow'); if(glow&&!reduce)addEventListener('pointermove',e=>{glow.style.left=e.clientX+'px';glow.style.top=e.clientY+'px'});
-
-let ac=null,nodes=[],master=null,current='NO MUSIC';
-const moodMap={
- 'JOGA BONITO':[[110,.035],[164.81,.026],[220,.018]],
- 'FINAL BOSS':[[55,.05],[82.41,.032],[146.83,.017]],
- 'MATCHDAY':[[73.42,.043],[110,.028],[196,.013]],
- 'LOCKED IN':[[65.41,.038],[98,.027],[130.81,.018]],
-};
-function stopAudio(){nodes.forEach(n=>{try{n.stop()}catch(e){}});nodes=[];if(master){master.disconnect();master=null}current='NO MUSIC';syncSound()}
-function startMood(name){
- stopAudio(); if(name==='NO MUSIC')return;
- ac=ac||new (window.AudioContext||window.webkitAudioContext)(); if(ac.state==='suspended')ac.resume();
- master=ac.createGain(); master.gain.value=Number(localStorage.getItem('nts-volume')||.28); master.connect(ac.destination);
- const filter=ac.createBiquadFilter(); filter.type='lowpass';filter.frequency.value=920;filter.Q.value=.8;filter.connect(master);
- (moodMap[name]||moodMap['LOCKED IN']).forEach(([f,g],i)=>{const o=ac.createOscillator(),gain=ac.createGain();o.type=i===0?'sine':'triangle';o.frequency.value=f;gain.gain.value=g;o.connect(gain).connect(filter);o.start();nodes.push(o)});
- current=name;localStorage.setItem('nts-mood',name);syncSound();
-}
-function syncSound(){
- const txt=$('[data-sound-label]'); if(txt)txt.textContent=current;
- const wrap=$('[data-sound-button]')?.closest('.sound'); if(wrap)wrap.classList.toggle('off',current==='NO MUSIC');
- const sel=$('#moodSelect');if(sel)sel.value=current;
-}
-$$('[data-sound-button]').forEach(b=>b.addEventListener('click',()=>$('#soundPanel')?.classList.toggle('open')));
-$('#moodSelect')?.addEventListener('change',e=>startMood(e.target.value));
-$('#volume')?.addEventListener('input',e=>{localStorage.setItem('nts-volume',e.target.value);if(master)master.gain.value=Number(e.target.value)});
-$('#power')?.addEventListener('change',e=>body.classList.toggle('low-power',e.target.checked));
-const saved=localStorage.getItem('nts-mood'); if(saved&&saved!=='NO MUSIC') current='NO MUSIC'; syncSound();
-
-const intro=$('#intro');
-if(intro){
- const seen=localStorage.getItem('nts-intro-seen')==='1';
- if(seen) intro.classList.add('hide');
- else{
-  const lines=['NOT THE SCRIPT.','SKILL ISSUE.','THERE ARE LEVELS TO THIS SHIT.','ENTER THE WORLD.'];
-  const line=$('#introLine'),bar=$('#introBar');let i=0;
-  const next=()=>{if(i>=lines.length){setTimeout(()=>{intro.classList.add('hide');localStorage.setItem('nts-intro-seen','1')},850);return}
-    line.textContent=lines[i];bar.style.width=((i+1)/lines.length*100)+'%';i++;setTimeout(next,i===3?1000:1050)};
-  setTimeout(next,350);
+ const $=(s,p=document)=>p.querySelector(s), $$=(s,p=document)=>[...p.querySelectorAll(s)];
+ const body=document.body; const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+ if(reduce) body.classList.add('reduce-motion');
+ const root=document.documentElement;
+ let mx=.5,my=.5;
+ const updatePointer=e=>{mx=e.clientX/innerWidth;my=e.clientY/innerHeight;root.style.setProperty('--mx',e.clientX+'px');root.style.setProperty('--my',e.clientY+'px');root.style.setProperty('--mxn',(mx-.5).toFixed(3));root.style.setProperty('--myn',(my-.5).toFixed(3));};
+ addEventListener('pointermove',updatePointer,{passive:true});
+ const canvas=$('#stars');
+ if(canvas){const ctx=canvas.getContext('2d');let stars=[];let raf;
+  function resize(){canvas.width=innerWidth*devicePixelRatio;canvas.height=innerHeight*devicePixelRatio;ctx.setTransform(devicePixelRatio,0,0,devicePixelRatio,0,0);stars=Array.from({length:Math.min(210,Math.floor(innerWidth/5))},()=>({x:Math.random()*innerWidth,y:Math.random()*innerHeight,r:Math.random()*1.3+.15,a:Math.random()*.5+.08,v:Math.random()*.09+.012,dx:(Math.random()-.5)*.02}))}
+  function draw(){ctx.clearRect(0,0,innerWidth,innerHeight);for(const s of stars){ctx.beginPath();ctx.fillStyle=`rgba(212,228,255,${s.a})`;ctx.arc(s.x,s.y,s.r,0,Math.PI*2);ctx.fill();if(!reduce&&!body.classList.contains('low-power')){s.y+=s.v;s.x+=s.dx;if(s.y>innerHeight)s.y=0;if(s.x>innerWidth)s.x=0;if(s.x<0)s.x=innerWidth}}raf=requestAnimationFrame(draw)}
+  addEventListener('resize',resize);resize();draw();document.addEventListener('visibilitychange',()=>{if(document.hidden)cancelAnimationFrame(raf);else draw()});
  }
- $('#skipIntro')?.addEventListener('click',()=>{intro.classList.add('hide');localStorage.setItem('nts-intro-seen','1')});
-}
-$$('[data-enter-sound]').forEach(b=>b.addEventListener('click',()=>{if(current==='NO MUSIC')startMood(localStorage.getItem('nts-mood')==='NO MUSIC'?'LOCKED IN':(localStorage.getItem('nts-mood')||'LOCKED IN'))}));
-document.addEventListener('keydown',e=>{if(e.key==='Escape')$('#soundPanel')?.classList.remove('open')});
+ function syncScroll(){const max=Math.max(1,document.documentElement.scrollHeight-innerHeight);const p=scrollY/max;root.style.setProperty('--scroll',p.toFixed(4));$$('.parallax').forEach(el=>{const r=el.getBoundingClientRect();const rel=(innerHeight/2-(r.top+r.height/2))/innerHeight;el.style.transform=`translate3d(0,${rel*Number(el.dataset.speed||30)}px,0)`});}
+ addEventListener('scroll',syncScroll,{passive:true});syncScroll();
+ const intro=$('#intro');
+ if(intro){const line=$('#introLine'),bar=$('#introBar');const seen=sessionStorage.getItem('nts-intro-seen')==='1';const universal=['NOT THE SCRIPT.','SKILL ISSUE.','THERE ARE LEVELS TO THIS SHIT.','ENTER THE WORLD.'];const pitch=['NOT THE SCRIPT.','SKILL ISSUE.','YOU\'RE HERE BECAUSE YOU\'RE STILL LOSING.','ENTER THE PITCH.'];const seq=body.dataset.intro==='pitch'?pitch:universal;if(seen&&!body.dataset.forceIntro)intro.classList.add('hide');else{let i=0;const next=()=>{if(i>=seq.length){setTimeout(()=>{intro.classList.add('hide');sessionStorage.setItem('nts-intro-seen','1')},650);return}line.textContent=seq[i];line.classList.remove('glitch');void line.offsetWidth;line.classList.add('glitch');bar.style.width=((i+1)/seq.length*100)+'%';i++;setTimeout(next,i===3?900:1050)};setTimeout(next,320)}$('#skipIntro')?.addEventListener('click',()=>{intro.classList.add('hide');sessionStorage.setItem('nts-intro-seen','1')});}
+ let ac=null,nodes=[],master=null,current='NO MUSIC';
+ const moodMap={'JOGA BONITO':[[110,.032,'sine'],[164.81,.022,'triangle'],[220,.014,'sine']], 'FINAL BOSS':[[48.99,.045,'sine'],[73.42,.028,'triangle'],[123.47,.012,'sawtooth']], 'MATCHDAY':[[73.42,.037,'sine'],[110,.023,'triangle'],[196,.012,'sine']], 'LOCKED IN':[[65.41,.034,'sine'],[98,.023,'triangle'],[130.81,.013,'sine']]};
+ function syncSound(){body.dataset.mood=current;$$('[data-sound-label]').forEach(t=>t.textContent=current);$$('.sound').forEach(w=>w.classList.toggle('off',current==='NO MUSIC'));const s=$('#moodSelect');if(s)s.value=current}
+ function stopAudio(){nodes.forEach(n=>{try{n.stop()}catch{}});nodes=[];if(master){try{master.disconnect()}catch{};master=null}current='NO MUSIC';syncSound()}
+ function startMood(name){stopAudio();if(name==='NO MUSIC'){localStorage.setItem('nts-mood','NO MUSIC');return}ac=ac||new(window.AudioContext||window.webkitAudioContext)();if(ac.state==='suspended')ac.resume();master=ac.createGain();master.gain.value=Number(localStorage.getItem('nts-volume')||.23);master.connect(ac.destination);const filter=ac.createBiquadFilter();filter.type='lowpass';filter.frequency.value=name==='FINAL BOSS'?640:1000;filter.Q.value=.7;filter.connect(master);(moodMap[name]||moodMap['LOCKED IN']).forEach(([f,g,type])=>{const o=ac.createOscillator(),gain=ac.createGain();o.type=type;o.frequency.value=f;gain.gain.value=g;o.connect(gain).connect(filter);o.start();nodes.push(o)});current=name;localStorage.setItem('nts-mood',name);syncSound()}
+ $$('[data-sound-button]').forEach(b=>b.addEventListener('click',()=>$('#soundPanel')?.classList.toggle('open')));$('#moodSelect')?.addEventListener('change',e=>startMood(e.target.value));$('#volume')?.addEventListener('input',e=>{localStorage.setItem('nts-volume',e.target.value);if(master)master.gain.value=Number(e.target.value)});$('#power')?.addEventListener('change',e=>body.classList.toggle('low-power',e.target.checked));syncSound();$$('[data-enter-sound]').forEach(b=>b.addEventListener('click',()=>{if(current==='NO MUSIC')startMood(localStorage.getItem('nts-mood')&&localStorage.getItem('nts-mood')!=='NO MUSIC'?localStorage.getItem('nts-mood'):'LOCKED IN')}));
+ if(matchMedia('(pointer:fine)').matches&&!reduce){$$('[data-tilt]').forEach(el=>{el.addEventListener('pointermove',e=>{const r=el.getBoundingClientRect(),x=(e.clientX-r.left)/r.width-.5,y=(e.clientY-r.top)/r.height-.5;el.style.transform=`perspective(1000px) rotateX(${-y*7}deg) rotateY(${x*9}deg) translateY(-4px)`});el.addEventListener('pointerleave',()=>el.style.transform='')});}
+ const wipe=document.createElement('div');wipe.className='page-wipe';document.body.append(wipe);$$('a[href]').forEach(a=>a.addEventListener('click',e=>{const href=a.getAttribute('href');if(!href||href.startsWith('#')||href.startsWith('mailto:')||href.startsWith('http')||a.target==='_blank')return;e.preventDefault();wipe.classList.add('active');setTimeout(()=>location.href=href,430)}));
+ const price=$('#demoPrice'),cost=$('#demoCost'),outMargin=$('#demoMargin'),outContribution=$('#demoContribution'),bar=$('#demoBar');function calcMargin(){if(!price||!cost)return;const p=Number(price.value),c=Number(cost.value),con=p-c,m=p?con/p*100:0;if(outMargin)outMargin.textContent=m.toFixed(1)+'%';if(outContribution)outContribution.textContent='€'+con.toFixed(2);if(bar)bar.style.width=Math.max(0,Math.min(100,m))+'%'}price?.addEventListener('input',calcMargin);cost?.addEventListener('input',calcMargin);calcMargin();
+ const eye=$('.boss-eye');if(eye&&!reduce)addEventListener('pointermove',()=>{const x=(mx-.5)*18,y=(my-.5)*7;eye.style.transform=`translate(calc(-50% + ${x}px),calc(-50% + ${y}px))`});
+ document.addEventListener('keydown',e=>{if(e.key==='Escape')$('#soundPanel')?.classList.remove('open')});
 })();
