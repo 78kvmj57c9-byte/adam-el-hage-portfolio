@@ -1,4 +1,4 @@
-# Adam El-Hage — Developer Portfolio
+# Adam El Hage — Personal Development Portfolio
 
 I build software, web systems, automation, reporting tools and experimental AI/computer-vision projects.
 
